@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animal Healthcare AI Agent</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-gradient: url('https://wallpapercave.com/wp/wp2544022.jpg'), linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+      --panel-bg: rgba(255, 255, 255, 0.3);
+      --text-color: #000;
+      --label-color: #555;
+      --input-border: #ccc;
+      --button-bg: linear-gradient(45deg, #87CEEB, #FFFFFF);
+      --profile-border: #ddd;
+      --profile-active-bg: #c8e6c9;
+      --profile-hover-bg: #f0f8f0;
+      --user-msg-bg: linear-gradient(45deg, #e3f2fd, #bbdefb);
+      --user-msg-color: #0d47a1;
+      --bot-msg-bg: linear-gradient(45deg, #f3e5f5, #e1bee7);
+      --bot-msg-color: #4a148c;
+      --history-border: #ddd;
+      --history-hover-bg: #f0f8f0;
+      --chat-bg: rgba(219, 237, 242, 0.6);
+    }
+
+    body.dark-mode {
+      --bg-gradient: linear-gradient(135deg, #1a237e 0%, #3f51b5 100%);
+      --panel-bg: rgba(0, 0, 0, 0.3);
+      --text-color: #ecf0f1;
+      --label-color: #bdc3c7;
+      --input-border: #7f8c8d;
+      --button-bg: linear-gradient(45deg, #87CEEB, #FFFFFF);
+      --profile-border: #7f8c8d;
+      --profile-active-bg: #27ae60;
+      --profile-hover-bg: #2ecc71;
+      --user-msg-bg: linear-gradient(45deg, #34495e, #2c3e50);
+      --user-msg-color: #ecf0f1;
+      --bot-msg-bg: linear-gradient(45deg, #9b59b6, #8e44ad);
+      --bot-msg-color: #ecf0f1;
+      --history-border: #7f8c8d;
+      --history-hover-bg: #2ecc71;
+      --chat-bg: rgba(52, 73, 94, 0.6);
+    }
+
+    body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; display: flex; height: 100vh; background: var(--bg-gradient) no-repeat center center fixed; background-size: cover; transition: background 0.3s ease; }
+    .left-panel { width: 25%; background-color: var(--panel-bg); padding: 20px; overflow-y: auto; border-radius: 15px; margin: 10px; border: 1px solid #add8e6; box-shadow: 0 8px 32px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+    .center-panel { width: 50%; padding: 20px; border-left: 1px solid #ddd; border-right: 1px solid #ddd; display: flex; flex-direction: column; background-color: var(--panel-bg); margin: 10px; border-radius: 15px; border: 1px solid #add8e6; box-shadow: 0 8px 32px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+    .right-panel { width: 25%; background-color: var(--panel-bg); padding: 20px; overflow-y: auto; border-radius: 15px; margin: 10px; border: 1px solid #add8e6; box-shadow: 0 8px 32px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+    h1, h2 { text-align: center; color: var(--text-color); transition: color 0.3s; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+    .panel-header { background: var(--button-bg); padding: 10px; border-radius: 8px; margin-bottom: 10px; color: #000; }
+    form { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--label-color); transition: color 0.3s; }
+    input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid var(--input-border); border-radius: 8px; background-color: var(--panel-bg); color: var(--text-color); transition: all 0.3s ease; }
+    input::placeholder { color: var(--label-color); opacity: 0.7; }
+    input:focus, select:focus, textarea:focus { outline: none; box-shadow: 0 0 0 2px var(--button-bg); border-color: var(--button-bg); }
+    button { padding: 10px 20px; background: var(--button-bg); color: #000; border: 1px solid #ddd; cursor: pointer; border-radius: 8px; font-size: 16px; transition: all 0.3s ease; box-shadow: 0 4px 8px rgba(0,0,0,0.2); display: inline-flex; align-items: center; gap: 5px; }
+
+    .left-panel button {
+      padding: 5px 10px;
+      font-size: 14px;
+    }
+
+    .profile-actions button {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    button:focus { outline: none; box-shadow: 0 0 0 2px rgba(255,255,255,0.5); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .profile-item { padding: 15px; border: 1px solid var(--profile-border); margin-bottom: 10px; cursor: pointer; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease; position: relative; overflow: hidden; }
+    .profile-item::before { content: '\f1b0'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: var(--text-color); opacity: 0.3; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 0; }
+    .profile-info { flex: 1; display: flex; align-items: center; position: relative; z-index: 1; }
+    .profile-actions { display: flex; gap: 5px; z-index: 1; }
+    .profile-item.active { background-color: var(--profile-active-bg); border-color: #4CAF50; animation: pulse 2s infinite; }
+    .profile-item:hover { background-color: var(--profile-hover-bg); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); } 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); } }
+    .profile-item img { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .profile-item img:not([src]) { background: var(--button-bg); display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; }
+    .chat-message { margin-bottom: 15px; padding: 15px; border-radius: 15px; line-height: 1.6; animation: fadeIn 0.5s ease-out; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .user-message { background: var(--user-msg-bg); color: var(--user-msg-color); transition: all 0.3s ease; margin-left: 20%; }
+    .bot-message { background: var(--bot-msg-bg); color: var(--bot-msg-color); transition: all 0.3s ease; margin-right: 20%; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .history-item { padding: 15px; border: 1px solid var(--history-border); margin-bottom: 10px; cursor: pointer; border-radius: 12px; transition: all 0.3s ease; display: flex; justify-content: space-between; align-items: center; }
+    .history-item::before { content: '\f1d8'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: var(--text-color); opacity: 0.5; margin-right: 10px; }
+    .history-item:hover { background-color: var(--history-hover-bg); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    #chat-messages { flex: 1; overflow-y: auto; border: 1px solid var(--history-border); margin-bottom: 10px; padding: 15px; border-radius: 12px; background-color: var(--chat-bg); transition: all 0.3s ease; }
+    #themeToggle { transition: transform 0.3s ease; }
+    #themeToggle:hover { transform: rotate(180deg); }
+    @media (max-width: 768px) {
+      body { flex-direction: column; height: auto; }
+      .left-panel, .center-panel, .right-panel { width: 100%; margin: 5px 0; border-left: none; border-right: none; }
+      .user-message { margin-left: 0; margin-right: 10%; }
+      .bot-message { margin-right: 0; margin-left: 10%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="left-panel">
+    <div class="panel-header">
+      <h2>Pet Profiles</h2>
+    </div>
+    <button onclick="showCreateProfile()"><i class="fas fa-plus"></i> Add New Profile</button>
+    <div id="profiles"></div>
+  </div>
+
+  <div class="center-panel">
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <h1>Animal Healthcare AI Agent</h1>
+      <button onclick="toggleDarkMode()" id="themeToggle">Dark Mode</button>
+    </div>
+    <button onclick="newChat()" style="margin-bottom: 10px;"><i class="fas fa-comment-dots"></i> New Chat</button>
+    <div id="chat-messages"></div>
+    <form id="chatForm">
+      <input type="text" id="message" placeholder="Ask about your pet's health...">
+      <button type="submit" id="sendBtn" disabled><i class="fas fa-paper-plane"></i> Send</button>
+    </form>
+  </div>
+
+  <div class="right-panel">
+    <div class="panel-header">
+      <h2>Chat History</h2>
+    </div>
+    <div id="history"></div>
+  </div>
+
+  <script>
+    let currentProfile = null;
+    let chatMessages = [];
+
+    document.getElementById('chatForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const message = document.getElementById('message').value;
+      if (message && currentProfile) {
+        addMessage('user', message);
+        getAdvice(message);
+        document.getElementById('message').value = '';
+      }
+    });
+
+        function showCreateProfile() {
+            let ageOptions = '<option value="">Select Age</option>';
+            for (let i = 1; i <= 30; i++) {
+                ageOptions += `<option value="${i}">${i}</option>`;
+            }
+            const form = `
+                <form id="profileForm" enctype="multipart/form-data">
+                    <label for="name">Pet Name:</label>
+                    <input type="text" id="name" required>
+                    <label for="type">Animal Type:</label>
+                    <input type="text" id="type" required>
+                    <label for="age">Age:</label>
+                    <select id="age" required>
+                        ${ageOptions}
+                    </select>
+                    <label for="breed">Breed:</label>
+                    <input type="text" id="breed" required>
+                    <label for="gender">Gender:</label>
+                    <select id="gender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                    <label for="profile_pic">Profile Picture:</label>
+                    <input type="file" id="profile_pic" accept="image/*">
+                    <label for="medical_history">Medical History:</label>
+                    <textarea id="medical_history"></textarea>
+                    <button type="submit"><i class="fas fa-save"></i> Create Profile</button>
+                </form>
+            `;
+            document.getElementById('chat-messages').innerHTML = form;
+            document.getElementById('profileForm').addEventListener('submit', createProfile);
+        }
+
+    function createProfile(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('profile_pic');
+      const file = fileInput.files[0];
+      let profilePic = '';
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          profilePic = event.target.result;
+          sendProfileData(profilePic);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        sendProfileData(profilePic);
+      }
+
+      function sendProfileData(pic) {
+        const data = {
+          name: document.getElementById('name').value,
+          type: document.getElementById('type').value,
+          age: document.getElementById('age').value,
+          breed: document.getElementById('breed').value,
+          gender: document.getElementById('gender').value,
+          profile_pic: pic,
+          medical_history: document.getElementById('medical_history').value ? document.getElementById('medical_history').value.split(',') : []
+        };
+        fetch('/create_profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+          loadProfiles();
+          document.getElementById('chat-messages').innerHTML = '';
+        })
+        .catch(error => {
+          addMessage('bot', '❌ Error creating profile: ' + error);
+        });
+      }
+    }
+
+    function loadProfiles() {
+      fetch('/get_profiles')
+      .then(response => response.json())
+      .then(data => {
+        const profilesDiv = document.getElementById('profiles');
+        profilesDiv.innerHTML = '';
+        data.profiles.forEach(profile => {
+          const div = document.createElement('div');
+          div.className = 'profile-item';
+          const pic = profile.profile_pic ? `<img src="${profile.profile_pic}" style="width:60px;height:60px;border-radius:50%;margin-right:10px;vertical-align:middle;">` : '';
+          div.innerHTML = `<div class="profile-info">${pic}<h3>${profile.name}</h3></div>
+<div class="profile-actions"><button onclick="editProfile(${profile.id}); event.stopPropagation();"><i class="fas fa-edit"></i> Edit</button><button onclick="deleteProfile(${profile.id}); event.stopPropagation();"><i class="fas fa-trash"></i> Delete</button></div>`;
+          div.onclick = (event) => selectProfile(profile, div);
+          div.classList.add('fade-in');
+          profilesDiv.appendChild(div);
+        });
+      });
+    }
+
+    function selectProfile(profile, element) {
+      currentProfile = profile;
+      document.querySelectorAll('.profile-item').forEach(p => p.classList.remove('active'));
+      element.classList.add('active');
+      document.getElementById('sendBtn').disabled = false;
+      showProfileDetails(profile);
+    }
+
+    function showProfileDetails(profile) {
+      const pic = profile.profile_pic ? `<img src="${profile.profile_pic}" style="width:100px;height:100px;border-radius:50%;margin-right:10px;vertical-align:middle;">` : '';
+      const details = `
+        <h2>${pic}${profile.name}'s Profile</h2>
+        <p><strong>Type:</strong> ${profile.type}</p>
+        <p><strong>Age:</strong> ${profile.age} years</p>
+        <p><strong>Breed:</strong> ${profile.breed}</p>
+        <p><strong>Gender:</strong> ${profile.gender}</p>
+        <p><strong>Medical History:</strong> ${profile.medical_history.join(', ')}</p>
+      `;
+      document.getElementById('chat-messages').innerHTML = details;
+    }
+
+    function addMessage(sender, message) {
+      const messagesDiv = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = `chat-message ${sender}-message fade-in`;
+      div.innerHTML = `<strong>${sender === 'user' ? 'You' : 'AI'}:</strong> ${message}`;
+      messagesDiv.appendChild(div);
+      chatMessages.push({ sender, message });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function getAdvice(message) {
+    if (!currentProfile) return;
+    fetch('/advice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            profile_name: currentProfile.name,
+            user_response: message
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.advice) {
+            addMessage('bot', data.advice);
+            saveHistory();
+        } else {
+            addMessage('bot', "⚠️ Sorry, I couldn't process your request.");
+        }
+    })
+    .catch(err => {
+        addMessage('bot', "❌ Error connecting to AI: " + err.message);
+    });
+}
+
+
+    function saveHistory() {
+      const title = `Chat with ${currentProfile.name}`;
+      fetch('/save_history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, messages: chatMessages })
+      });
+      loadHistory();
+    }
+
+    function loadHistory() {
+      fetch('/get_history')
+      .then(response => response.json())
+      .then(data => {
+        const historyDiv = document.getElementById('history');
+        historyDiv.innerHTML = '';
+
+        // Group history by title (pet name)
+        const grouped = {};
+        data.history.forEach(item => {
+          if (!grouped[item.title]) {
+            grouped[item.title] = {
+              title: item.title,
+              messagesCount: 0,
+              latestDate: item.date
+            };
+          }
+          grouped[item.title].messagesCount += item.messages.length;
+          if (new Date(item.date) > new Date(grouped[item.title].latestDate)) {
+            grouped[item.title].latestDate = item.date;
+          }
+        });
+
+        // Render one entry per pet
+        Object.values(grouped).forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'history-item';
+          const date = new Date(item.latestDate).toLocaleDateString();
+          div.innerHTML = `<div><h4>${item.title}</h4><p>${item.messagesCount} messages - ${date}</p></div>
+                          <button onclick="deleteHistory('${item.title}'); event.stopPropagation();"><i class="fas fa-trash"></i> Delete</button>`;
+          div.onclick = () => loadFullHistory(item.title);
+          div.classList.add('fade-in');
+          historyDiv.appendChild(div);
+        });
+      });
+    }
+
+    function loadFullHistory(title) {
+      fetch(`/get_history/${encodeURIComponent(title)}`)
+      .then(response => response.json())
+      .then(data => {
+        const messagesDiv = document.getElementById('chat-messages');
+        messagesDiv.innerHTML = '';
+        // Flatten all messages from all chat history entries for this pet
+        const allMessages = [];
+        data.history.forEach(entry => {
+          allMessages.push(...entry.messages);
+        });
+        allMessages.forEach(msg => {
+          const div = document.createElement('div');
+          div.className = `chat-message ${msg.sender}-message`;
+          div.innerHTML = `<strong>${msg.sender === 'user' ? 'You' : 'AI'}:</strong> ${msg.message}`;
+          messagesDiv.appendChild(div);
+        });
+      });
+    }
+
+    function showHistoryMessages(messages) {
+      const messagesDiv = document.getElementById('chat-messages');
+      messagesDiv.innerHTML = '';
+      messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = `chat-message ${msg.sender}-message`;
+        div.innerHTML = `<strong>${msg.sender === 'user' ? 'You' : 'AI'}:</strong> ${msg.message}`;
+        messagesDiv.appendChild(div);
+      });
+    }
+
+    function newChat() {
+      chatMessages = [];
+      document.getElementById('chat-messages').innerHTML = '';
+    }
+
+    function editProfile(id) {
+      fetch('/get_profiles')
+      .then(response => response.json())
+      .then(data => {
+        const profile = data.profiles.find(p => p.id == id);
+        showEditProfile(profile);
+      });
+    }
+
+    function showEditProfile(profile) {
+      let ageOptions = '<option value="">Select Age</option>';
+      for (let i = 1; i <= 30; i++) {
+        const selected = profile.age == i ? 'selected' : '';
+        ageOptions += `<option value="${i}" ${selected}>${i}</option>`;
+      }
+      const form = `
+        <form id="editProfileForm" enctype="multipart/form-data">
+          <label for="edit_name">Pet Name:</label>
+          <input type="text" id="edit_name" value="${profile.name}" required>
+          <label for="edit_type">Animal Type:</label>
+          <input type="text" id="edit_type" value="${profile.type}" required>
+          <label for="edit_age">Age:</label>
+          <select id="edit_age" required>
+            ${ageOptions}
+          </select>
+          <label for="edit_breed">Breed:</label>
+          <input type="text" id="edit_breed" value="${profile.breed}" required>
+          <label for="edit_gender">Gender:</label>
+          <select id="edit_gender" required>
+            <option value="Male" ${profile.gender === 'Male' ? 'selected' : ''}>Male</option>
+            <option value="Female" ${profile.gender === 'Female' ? 'selected' : ''}>Female</option>
+          </select>
+          <label for="edit_profile_pic">Profile Picture:</label>
+          <input type="file" id="edit_profile_pic" accept="image/*">
+          <label for="edit_medical_history">Medical History:</label>
+          <textarea id="edit_medical_history">${profile.medical_history.join(', ')}</textarea>
+          <button type="submit"><i class="fas fa-save"></i> Update Profile</button>
+        </form>
+      `;
+      document.getElementById('chat-messages').innerHTML = form;
+      document.getElementById('editProfileForm').addEventListener('submit', (e) => editProfileSubmit(e, profile.id));
+    }
+
+    function editProfileSubmit(e, id) {
+      e.preventDefault();
+      const fileInput = document.getElementById('edit_profile_pic');
+      const file = fileInput.files[0];
+      let profilePic = '';
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          profilePic = event.target.result;
+          sendEditData(id, profilePic);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        sendEditData(id, profilePic);
+      }
+
+      function sendEditData(id, pic) {
+        const data = {
+          name: document.getElementById('edit_name').value,
+          type: document.getElementById('edit_type').value,
+          age: document.getElementById('edit_age').value,
+          breed: document.getElementById('edit_breed').value,
+          gender: document.getElementById('edit_gender').value,
+          profile_pic: pic,
+          medical_history: document.getElementById('edit_medical_history').value ? document.getElementById('edit_medical_history').value.split(',') : []
+        };
+        fetch(`/edit_profile/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+          loadProfiles();
+          if (currentProfile && currentProfile.id == id) {
+            currentProfile = data.profile;
+          }
+          document.getElementById('chat-messages').innerHTML = '';
+        })
+        .catch(error => {
+          addMessage('bot', '❌ Error updating profile: ' + error);
+        });
+      }
+    }
+
+    function deleteProfile(id) {
+      if (confirm('Delete this profile?')) {
+        fetch(`/delete_profile/${id}`, { method: 'DELETE' })
+        .then(() => {
+          loadProfiles();
+          if (currentProfile && currentProfile.id == id) {
+            currentProfile = null;
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('chat-messages').innerHTML = '';
+          }
+        })
+        .catch(error => {
+          addMessage('bot', '❌ Error deleting profile: ' + error);
+        });
+      }
+    }
+
+    function deleteHistory(title) {
+      if (confirm('Delete all chat history for this pet?')) {
+        fetch(`/delete_history/${encodeURIComponent(title)}`, { method: 'DELETE' })
+        .then(() => loadHistory())
+        .catch(error => {
+          addMessage('bot', '❌ Error deleting history: ' + error);
+        });
+      }
+    }
+
+    function toggleDarkMode() {
+      const body = document.body;
+      const toggleBtn = document.getElementById('themeToggle');
+      body.classList.toggle('dark-mode');
+      if (body.classList.contains('dark-mode')) {
+        toggleBtn.textContent = 'Light Mode';
+      } else {
+        toggleBtn.textContent = 'Dark Mode';
+      }
+    }
+
+    loadProfiles();
+    loadHistory();
+  </script>
+</body>
+</html>
